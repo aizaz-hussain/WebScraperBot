@@ -8,12 +8,12 @@ from selenium.webdriver.common.by import By
 from urllib.request import Request, urlopen
 
 
+
 src = ''
 carModel='Civic Rebirth'
 carCity=''
 priceMin=''
 priceMax=''
-
 
 
 service = Service('/usr/local/bin/chromedriver/chromedriver')
@@ -23,12 +23,34 @@ driver = webdriver.Chrome(service=service)
 driver.get(f'https://www.pakwheels.com/used-cars/search/-/ct_{carCity}/pr_{priceMin}_{priceMax}/?q={carModel}')
 
 adContainer = driver.find_elements(By.XPATH, "//*[contains(@class, 'ad-container')]")
-img_dir = f'/home/aizazhussain/PycharmProjects/WebScraperBot/ScrapingBot_Pakwheels/Images/'
+img_dir = f'/home/aizazhussain/PycharmProjects/Pakwheels.com_Scrapper/Images/'
 
 for idx in range(1, len(adContainer)):
 
     count = 0
 
+    adId = adContainer[idx].find_element(By.CLASS_NAME, "car-name")
+    adId = adId.get_attribute('href').split('-')[-1]
+
+    # Storing vehicle information
+    carName = adContainer[idx].find_element(By.CLASS_NAME, "car-name").text
+    carPrice = adContainer[idx].find_element(By.CLASS_NAME, "price-details").text
+    carCity = adContainer[idx].find_element(By.CLASS_NAME, "search-vehicle-info").text
+    carInfo = adContainer[idx].find_element(By.CLASS_NAME, "search-vehicle-info-2")
+    li = carInfo.find_elements(By.TAG_NAME, "li")
+    year = li[0].text
+    dist = li[1].text
+    fuel = li[2].text
+    hp = li[3].text
+    transmission = li[4].text
+
+    adType = ''
+    if adContainer[idx].text.find("FEATURED") > -1:
+        adType = "FEATURED"
+    else:
+        adType = "NORMAL"
+
+    # Storing image information
     img_gallery = adContainer[idx].find_element(By.CLASS_NAME, "image-gallery");
     img_src = img_gallery.get_attribute('data-galleryinfo')
     img_src = img_src.replace('[', '')
@@ -38,7 +60,7 @@ for idx in range(1, len(adContainer)):
     for idx in range(len(img_list)):
         if 'src' in img_list[idx]:
             src = img_list[idx].split('":"')[1].replace('"', '')
-            img_dir = f'/home/aizazhussain/PycharmProjects/WebScraperBot/ScrapingBot_Pakwheels/Images/{src.split("/")[-2]}/'
+            img_dir = f'/home/aizazhussain/PycharmProjects/Pakwheels.com_Scrapper/Images/{src.split("/")[-2]}/'
             img_name = f'{src.split("/")[-2]}_{count}.webp'
 
             if not os.path.exists(img_dir):
@@ -46,10 +68,5 @@ for idx in range(1, len(adContainer)):
 
             count += 1
             filename, headers = opener.retrieve(src, img_dir + img_name)
-
-
-
-
-
 
 
